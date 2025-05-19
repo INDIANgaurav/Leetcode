@@ -1,58 +1,102 @@
+const redisClient = require("../config/redis");
 const User = require("../models/User");
 const validate = require("../utils/validate");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const register = async (req, res) => {
   try {
     validate(req.body);
     const { firstName, emailId, password } = req.body;
     req.body.password = await bcrypt.hash(password, 10);
+    req.body.role = "user";
     const user = await User.create(req.body);
+
     const token = jwt.sign(
-      { _id: user._id, emailId: emailId },
+      { _id: user._id, emailId, role:'user' },
       process.env.JWT_KEY,
-      { expiresIn: 60 * 60 }
+      {
+        expiresIn: 60 * 60,
+      }
     );
+
     res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
-    res.status(200).send("User register successfully");
+    res.status(200).send("User registered successfully");
   } catch (error) {
-    res.status(400).send("Error: ", error);
+    res.status(400).json({ error: error.message });
   }
 };
+
 const login = async (req, res) => {
   try {
     const { emailId, password } = req.body;
-    if (!emailId) {
+    if (!emailId || !password) {
       throw new Error("Invalid credentials");
-    }
-    if (!password) {
-      throw new Error("Invalid Credentials");
     }
 
     const user = await User.findOne({ emailId });
     if (!user) {
-      res.send("User not registered");
+      return res.status(400).json({ error: "User not registered" });
     }
-    const match = bcrypt.compare(password, user.password);
+
+    const match = await bcrypt.compare(password, user.password);
     if (!match) {
       throw new Error("Invalid credentials");
     }
+
     const token = jwt.sign(
-      { _id: user._id, emailId: emailId },
+      { _id: user._id, emailId, role: user.role },
       process.env.JWT_KEY,
-      { expiresIn: 60 * 60 }
+      {
+        expiresIn: "1h",
+      }
     );
+
     res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
-    res.status(200).send("loggedin successfully");
+    res.status(200).send("Logged in successfully");
   } catch (error) {
-    res.status(401).send("error", error);
+    res.status(401).json({ error: error.message });
   }
 };
 
-const logout = async(req,res) => {
-    try {
-        
-    } catch (error) {
-        
-    }
+const logout = async (req, res) => {
+  try {
+    const { token } = req.cookies;
+
+    const payload = jwt.decode(token);
+    await redisClient.set(`token:${token}`, "Blocked Token");
+    await redisClient.expireAt(`token:${token}`, payload.exp);
+    //token add krana hai redis ke blocklist me
+    // cookies ko clear kr denge
+
+    res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.send("Logged out successfully");
+  } catch (error) {
+    res.status(503).json({ error: error.message });
+  }
+};
+
+
+const adminRegister = async(req ,res ) => {
+  try {
+    validate(req.body);
+    const { firstName, emailId, password } = req.body;
+    req.body.password = await bcrypt.hash(password, 10);
+    req.body.role = "admin";
+    const user = await User.create(req.body);
+
+    const token = jwt.sign(
+      { _id: user._id, emailId, role:'admin' },
+      process.env.JWT_KEY,
+      {
+        expiresIn: 60 * 60,
+      }
+    );
+
+    res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
+    res.status(200).send("admin registered successfully");
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 }
+module.exports = { register, login, logout , adminRegister };
