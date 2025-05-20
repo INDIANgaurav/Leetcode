@@ -13,7 +13,7 @@ const register = async (req, res) => {
     const user = await User.create(req.body);
 
     const token = jwt.sign(
-      { _id: user._id, emailId, role:'user' },
+      { _id: user._id, emailId, role: "user" },
       process.env.JWT_KEY,
       {
         expiresIn: 60 * 60,
@@ -76,17 +76,16 @@ const logout = async (req, res) => {
   }
 };
 
-
-const adminRegister = async(req ,res ) => {
+const adminRegister = async (req, res) => {
   try {
     validate(req.body);
     const { firstName, emailId, password } = req.body;
     req.body.password = await bcrypt.hash(password, 10);
-    req.body.role = "admin";
+
     const user = await User.create(req.body);
 
     const token = jwt.sign(
-      { _id: user._id, emailId, role:'admin' },
+      { _id: user._id, emailId, role: user.role },
       process.env.JWT_KEY,
       {
         expiresIn: 60 * 60,
@@ -98,5 +97,5 @@ const adminRegister = async(req ,res ) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-}
-module.exports = { register, login, logout , adminRegister };
+};
+module.exports = { register, login, logout, adminRegister };
