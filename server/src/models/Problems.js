@@ -60,13 +60,24 @@ const problemSchema = new Schema({
       },
     },
   ],
-
+  refrenceSolution: [
+    {
+      language: {
+        type: String,
+        required: true,
+      },
+      completeCode: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   problemCreator: {
     type: Schema.Types.ObjectId,
-    ref:'user' ,
+    ref: "user",
     required: true,
   },
 });
 
-const Problem = mongoose.model('Problem' , problemSchema)
-module.exports = Problem ;
+const Problem = mongoose.model("Problem", problemSchema);
+module.exports = Problem;
