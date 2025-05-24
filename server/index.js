@@ -5,10 +5,11 @@ const cookieParser = require("cookie-parser");
 const { main } = require("./src/config/db");
 const authRouter = require("./src/routes/userAuth");
 const redisClient = require("./src/config/redis");
-
+const problemRouter = require("./src/routes/problemCreator")
 app.use(express.json());
 app.use(cookieParser());
 app.use("/user", authRouter);
+app.use("/problem", problemRouter);
 const InitializeConnection = async () => {
   try {
     await Promise.all([main(), redisClient.connect()]);

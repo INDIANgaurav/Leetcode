@@ -1,4 +1,10 @@
-const {getLanguageById , submitBatch} = require("../utils/ProblemUtils");
+const Problem = require("../models/Problems");
+
+const {
+  getLanguageById,
+  submitBatch,
+  submitToken,
+} = require("../utils/ProblemUtils");
 
 const createProblem = async (req, res) => {
   const {
@@ -19,13 +25,33 @@ const createProblem = async (req, res) => {
       // stdin
       // expectedOutput
       const languageId = getLanguageById(language);
-      const submission = visibleTestCases.map((input, output) => ({
+      const submissions = visibleTestCases.map((testCases) => ({
         source_code: completeCode,
         language_id: languageId,
-        stdin: input,
-        expected_output: output,
+        stdin: testCases.input,
+        expected_output: testCases.output,
       }));
-      const submitResult = await submitBatch(submission)
+      const submitResult = await submitBatch(submissions);
+      console.log(submitResult)
+      const resultToken = submitResult.map((value) => value.token);
+      const testResult = await submitToken(resultToken);
+      console.log(testResult)
+      for (const test of testResult) {
+        if (test.status_id != 3) {
+          return res.status(400).send("Error occured");
+        }
+      }
     }
-  } catch (error) {}
+
+    const userProblem = await Problem.create({
+      ...req.body,
+      problemCreator: req.result._id,
+    });
+
+    res.status(200).send("Problem saved successfully");
+  } catch (error) {
+    res.status(400).send("error: " + error);
+  }
 };
+
+module.exports = createProblem
