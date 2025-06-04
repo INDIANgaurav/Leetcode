@@ -6,7 +6,8 @@ const {
   deleteProblem,
   getProblemById,
   getAllProblems,
-  solvedAllProblemByUser
+  solvedAllProblemByUser,
+  submittedProblem
 } = require("../controllers/userProblem");
 const userMiddleware = require("../middleware/userMiddleware");
 const problemRouter = express.Router();
@@ -22,5 +23,6 @@ problemRouter.get(
   userMiddleware,
   solvedAllProblemByUser
 );
+problemRouter.get("/submittedProblem/:id" , userMiddleware , submittedProblem)
 
 module.exports = problemRouter;

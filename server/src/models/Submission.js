@@ -8,7 +8,7 @@ const SubmissionSchema = new Schema(
       required: true,
     },
     problemId: {
-       type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "problem",
       required: true,
     },
@@ -49,6 +49,7 @@ const SubmissionSchema = new Schema(
   },
   { timestamps: true }
 );
-
-const Submission  = mongoose.model("submission", SubmissionSchema);
+// yaha humne indexing krdi hai kuki db me to laakho krodo submission honge to unme apna dhundna bht hard hojyga isliye
+SubmissionSchema.index({ userId: 1, problemId: 1 });
+const Submission = mongoose.model("submission", SubmissionSchema);
 module.exports = Submission;

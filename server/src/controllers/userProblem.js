@@ -1,4 +1,5 @@
 const Problem = require("../models/Problems");
+const Submission = require("../models/Submission");
 const User = require("../models/User");
 
 const {
@@ -160,17 +161,33 @@ const getAllProblems = async (req, res) => {
 };
 const solvedAllProblemByUser = async (req, res) => {
   try {
- const userId = req.result._id ;
-const user = await User.findById(userId).populate({
-  path:"problemSolved",
-  select:"_id title difficulty tags "
-})
- return res.status(200).send(user.problemSolved)
+    const userId = req.result._id;
+    const user = await User.findById(userId).populate({
+      path: "problemSolved",
+      select: "_id title difficulty tags ",
+    });
+    return res.status(200).send(user.problemSolved);
   } catch (error) {
     res.status(500).send("Server error");
   }
 };
+const submittedProblem = async (req, res) => {
+  try {
+    const userId = req.result._id;
+    const problemId = req.params.pid;
+    const ans = await Submission.find({
+      userId,
+      problemId,
+    });
 
+    if (ans.length == 0) {
+      res.status(200).send("no submission is present");
+    }
+    return res.status(200).send(ans);
+  } catch (error) {
+    return res.status(500).send("internal server error");
+  }
+};
 module.exports = {
   createProblem,
   updateProblem,
@@ -178,4 +195,5 @@ module.exports = {
   getProblemById,
   getAllProblems,
   solvedAllProblemByUser,
+  submittedProblem,
 };
