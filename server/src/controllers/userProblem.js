@@ -1,4 +1,5 @@
 const Problem = require("../models/Problems");
+const User = require("../models/User");
 
 const {
   getLanguageById,
@@ -109,51 +110,72 @@ const updateProblem = async (req, res) => {
     return res.status(500).send("error: ", error);
   }
 };
-const deleteProblem = async(req,res) => {
-  const {id} = req.params ;
+const deleteProblem = async (req, res) => {
+  const { id } = req.params;
   try {
-    if(!id){
-      return res.status(400).send("id is missing")
-      }
+    if (!id) {
+      return res.status(400).send("id is missing");
+    }
 
-    const deletedProblem = await Problem.findByIdAndDelete(id)
-      if(!deletedProblem) {
-          return res.status(404).send("problem is missing")
-      }
-      return res.status(200).send("successfully deleted")
+    const deletedProblem = await Problem.findByIdAndDelete(id);
+    if (!deletedProblem) {
+      return res.status(404).send("problem is missing");
+    }
+    return res.status(200).send("successfully deleted");
   } catch (error) {
-    return res.status(500).send("error: " , error)
+    return res.status(500).send("error: ", error);
   }
-}
-const getProblemById = async(req,res) => {
-   const {id} = req.params ;
+};
+const getProblemById = async (req, res) => {
+  const { id } = req.params;
   try {
-    if(!id){
-      return res.status(400).send("id is missing")
-      }
-      const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases startCode  ');
- 
-      if(!getProblem) {
-          return res.status(404).send("problem is missing")
-      }
-      return res.status(200).send(getProblem)
-  } catch (error) {
-    return res.status(500).send("error: " , error)
-  }
-}
-const getAllProblems = async(req ,res) => {
-  
-  try {
-    
-      const getProblem = await Problem.find({}).select('_id title  difficulty tags ');
- 
-      if(getProblem.length == 0) {
-          return res.status(404).send("problem is missing")
-      }
-      return res.status(200).send(getProblem)
-  } catch (error) {
-    return res.status(500).send("error: " , error)
-  }
-}
+    if (!id) {
+      return res.status(400).send("id is missing");
+    }
+    const getProblem = await Problem.findById(id).select(
+      "_id title description difficulty tags visibleTestCases startCode  "
+    );
 
-module.exports = { createProblem, updateProblem , deleteProblem ,getProblemById ,getAllProblems    };
+    if (!getProblem) {
+      return res.status(404).send("problem is missing");
+    }
+    return res.status(200).send(getProblem);
+  } catch (error) {
+    return res.status(500).send("error: ", error);
+  }
+};
+const getAllProblems = async (req, res) => {
+  try {
+    const getProblem = await Problem.find({}).select(
+      "_id title  difficulty tags "
+    );
+
+    if (getProblem.length == 0) {
+      return res.status(404).send("problem is missing");
+    }
+    return res.status(200).send(getProblem);
+  } catch (error) {
+    return res.status(500).send("error: ", error);
+  }
+};
+const solvedAllProblemByUser = async (req, res) => {
+  try {
+ const userId = req.result._id ;
+const user = await User.findById(userId).populate({
+  path:"problemSolved",
+  select:"_id title difficulty tags "
+})
+ return res.status(200).send(user.problemSolved)
+  } catch (error) {
+    res.status(500).send("Server error");
+  }
+};
+
+module.exports = {
+  createProblem,
+  updateProblem,
+  deleteProblem,
+  getProblemById,
+  getAllProblems,
+  solvedAllProblemByUser,
+};

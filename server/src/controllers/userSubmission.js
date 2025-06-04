@@ -10,11 +10,12 @@ const submitCode = async (req, res) => {
     const userId = req.result._id;
     const problemId = req.params.id;
     const { code, language } = req.body;
+
     if (!userId || !code || !problemId || !language) {
       return res.status(400).send("field are missing");
     }
     // databse se problem fetch kro
-    const problem = Problem.findById(problemId);
+    const problem = await Problem.findById(problemId);
     // iske baad submission ko store kara du sbse pehle kuki judge0 ki koi confirmation nahi hai wo har baar response dega usse bachne k liye
 
     const submittedResult = await Submission.create({
@@ -27,12 +28,14 @@ const submitCode = async (req, res) => {
     });
 
     const languageId = getLanguageById(language);
-    const submissions = problem.map((testCases) => ({
+
+    const submissions = problem.hiddenTestCases.map((testCases) => ({
       source_code: code,
       language_id: languageId,
       stdin: testCases.input,
       expected_output: testCases.output,
     }));
+
     const submitResult = await submitBatch(submissions);
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
@@ -65,11 +68,45 @@ const submitCode = async (req, res) => {
     submittedResult.runtime = runtime;
     submittedResult.memory = memory;
     await submittedResult.save();
+    // problemid ko insert krenge userSchema ke problemsolved me ki agar wo waha present nahi hai tb
+    if (!req.result.problemSolved.includes(problemId)) {
+      req.result.problemSolved.push(problemId);
+      await req.result.save();
+    }
 
-    return res.status(201).send(submittedResult)
+    return res.status(201).send(submittedResult);
   } catch (error) {
-    return res.status(500).send(error)
+    return res.status(500).send(error);
   }
 };
+const runCode = async (req, res) => {
+  try {
+    const userId = req.result._id;
+    const problemId = req.params.id;
+    const { code, language } = req.body;
 
-module.exports = submitCode;
+    if (!userId || !code || !problemId || !language) {
+      return res.status(400).send("field are missing");
+    }
+    // databse se problem fetch kro
+    const problem = await Problem.findById(problemId);
+
+    const languageId = getLanguageById(language);
+
+    const submissions = problem.visibleTestCases.map((testCases) => ({
+      source_code: code,
+      language_id: languageId,
+      stdin: testCases.input,
+      expected_output: testCases.output,
+    }));
+
+    const submitResult = await submitBatch(submissions);
+    const resultToken = submitResult.map((value) => value.token);
+    const testResult = await submitToken(resultToken);
+
+    return res.status(201).send(testResult);
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+};
+module.exports = {submitCode , runCode};

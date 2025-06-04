@@ -1,14 +1,15 @@
 const mongoose = require("mongoose");
-const SubmissionSchema = new mongoose.Schema(
+const Schema = mongoose.Schema;
+const SubmissionSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     },
     problemId: {
-      type: Schema.Types.ObjectId,
-      ref: "Problem",
+       type: Schema.Types.ObjectId,
+      ref: "problem",
       required: true,
     },
     code: {
@@ -18,7 +19,7 @@ const SubmissionSchema = new mongoose.Schema(
     language: {
       type: String,
       required: true,
-      enum: ["javascript", "cpp", "java"],
+      enum: ["javascript", "c++", "java"],
     },
     status: {
       type: String,
@@ -49,5 +50,5 @@ const SubmissionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Submission  = mongoose.model("SubmissionProblem", SubmissionSchema);
+const Submission  = mongoose.model("submission", SubmissionSchema);
 module.exports = Submission;
