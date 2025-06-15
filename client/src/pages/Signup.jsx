@@ -1,63 +1,94 @@
-import { useForm } from "react-hook-form";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
-const Signup = () => {
+const signupSchema = z.object({
+  firstName: z.string().min(3, "Minimum character should be 3"),
+  emailId: z.string().email("Invalid Email"),
+  password: z.string().min(8, "Password is to weak")
+});
+
+function Signup() {
   const {
-    handleSubmit,
     register,
+    handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({ resolver: zodResolver(signupSchema) });
 
-  const submittedData = (data) => {
-    console.log(data)
-  }
+  const onSubmit = (data) => {
+    console.log(data);
+
+    // Backend data ko send kar dena chaiye?
+  };
+
   return (
-    <div>
-      <form onSubmit={handleSubmit(submittedData)}>
-        <input {...register("firstName")} placeholder="Enter name" />
-        <input {...register("email")} placeholder="Enter email" />
-        <input {...register("password")} placeholder="Enter password" />
+    <div className="min-h-screen flex items-center justify-center p-4"> {/* Centering container */}
+      <div className="card w-96 bg-base-100 shadow-xl"> {/* Existing card styling */}
+        <div className="card-body">
+          <h2 className="card-title justify-center text-3xl">Leetcode</h2> {/* Centered title */}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Existing form fields */}
+            <div className="form-control">
+              <label className="label mb-1">
+                <span className="label-text">First Name</span>
+              </label>
+              <input
+                type="text"
+                placeholder="John"
+                className={`input input-bordered ${errors.firstName && 'input-error'}`}
+                {...register('firstName')}
+              />
+              {errors.firstName && (
+                <span className="text-error">{errors.firstName.message}</span>
+              )}
+            </div>
 
-        <button type="submit" className="btn">Submit</button>
-      </form>
+            <div className="form-control  mt-4">
+              <label className="label mb-1">
+                <span className="label-text">Email</span>
+              </label>
+              <input
+                type="email"
+                placeholder="john@example.com"
+                className={`input input-bordered ${errors.emailId && 'input-error'}`}
+                {...register('emailId')}
+              />
+              {errors.emailId && (
+                <span className="text-error">{errors.emailId.message}</span>
+              )}
+            </div>
+
+            <div className="form-control mt-4">
+              <label className="label mb-1">
+                <span className="label-text">Password</span>
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className={`input input-bordered ${errors.password && 'input-error'}`}
+                {...register('password')}
+              />
+              {errors.password && (
+                <span className="text-error">{errors.password.message}</span>
+              )}
+            </div>
+
+            <div className="form-control mt-6 flex justify-center">
+              <button
+                type="submit"
+                className="btn btn-primary"
+              >
+                Sign Up
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default Signup;
 
-// import { useState } from "react";
 
-// const Signup = () => {
-//   const [name, setName] = useState("");
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     console.log(name,email,password)
-//   };
-//   return (
-//     <form onSubmit={handleSubmit} className=" min-h-screen gap-y-4 flex flex-col justify-center items-center">
-//       <input
-//         type="text"
-//         value={name}
-//         placeholder="Enter your first name"
-//         onChange={(e) => setName(e.target.value)}
-//       />
-//       <input
-//         type="email"
-//         value={email}
-//         placeholder="Enter your Email"
-//         onChange={(e) => setEmail(e.target.value)}
-//       />
-//       <input
-//         type="password"
-//         value={password}
-//         placeholder="Enter your Password"
-//         onChange={(e) => setPassword(e.target.value)}
-//       />
-//        <button type="submit">Signup</button>
-//     </form>
-//   );
-// };
 
-// export default Signup;
