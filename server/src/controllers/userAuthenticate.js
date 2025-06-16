@@ -20,9 +20,16 @@ const register = async (req, res) => {
         expiresIn: 60 * 60,
       }
     );
-
+    const reply = {
+      firstName: user.firstName,
+      emailId: user.emailId,
+      _id: user._id,
+    };
     res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
-    res.status(200).send("User registered successfully");
+    res.status(201).json({
+      user: reply,
+      message: "Register Successfully",
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -52,9 +59,16 @@ const login = async (req, res) => {
         expiresIn: "1h",
       }
     );
-
+    const reply = {
+      firstName: user.firstName,
+      emailId: user.emailId,
+      _id: user._id,
+    };
     res.cookie("token", token, { maxAge: 60 * 60 * 1000 });
-    res.status(200).send("Logged in successfully");
+    res.status(201).json({
+      user: reply,
+      message: "Loggedin Successfully",
+    });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
